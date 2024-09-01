@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+
+  // To implement many to many self relations
+  // We have to define an extra relation 
+  // friendIds      String[]  @db.ObjectId
+  // friends        Friends[] @relation(fields: [friendIds], references: [id])
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+      
+  chatIds        String[] @db.ObjectId
+  chats          Chat[]   @relation(fields: [chatIds], references: [id])
+
+  seenMessageIds String[]  @db.ObjectId
+  seenMessages   Message[] @relation("Seen", fields: [seenMessageIds], references: [id])
+
+  messages       Message[]
+}
+
+// model Friends {
+//   id      String @id @default(auto()) @map("_id") @db.ObjectId
+//   userIds   String[] @db.ObjectId
+//   users User[] @relation(fields: [userIds], references: [id])
+// }
+
+
+model Chat {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  lastMessageAt DateTime @default(now())
+  lastMessageId String?  @db.ObjectId
+  isGroup       Boolean?
+
+  messageIds String[]  @db.ObjectId
+  messages   Message[]
+
+  userIds      String[] @db.ObjectId
+  participants User[]   @relation(fields: [userIds], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  content String?
+  image   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chatId String  @db.ObjectId
+  chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  senderId String @db.ObjectId
+  sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  seenIds String[] @db.ObjectId
+  seen    User[]   @relation("Seen", fields: [seenIds], references: [id])
+}
+
