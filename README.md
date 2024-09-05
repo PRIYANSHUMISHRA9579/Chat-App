@@ -28,6 +28,6 @@ To get started, clone the repository:
 
 ```bash
 git clone https://github.com/PRIYANSHUMISHRA9579/Chat-App.git
-cd chat-app
+
 npm install
 npm run dev
